@@ -28,8 +28,6 @@ type coord struct {
 
 var (
 	symbolReg = regexp.MustCompile(`[^.\d]`)
-
-	gearMap map[coord]*gear = make(map[coord]*gear)
 )
 
 func newPartNumber(schematicRow []string, col, row, digit int) (partNumber, int) {
@@ -53,11 +51,10 @@ func newPartNumber(schematicRow []string, col, row, digit int) (partNumber, int)
 	return pn, col + length
 }
 
-func parse(schematic [][]string) []partNumber {
+func parse(schematic [][]string) ([]partNumber, map[coord]*gear) {
 	partNumbers := make([]partNumber, 0)
 	for row := 0; row < len(schematic); row++ {
 		schematicRow := schematic[row]
-
 		for col := 0; col < len(schematicRow); col++ {
 			item := schematicRow[col]
 			digit, err := strconv.Atoi(item)
@@ -69,42 +66,38 @@ func parse(schematic [][]string) []partNumber {
 		}
 	}
 
-	// check if partNumber is next to symbol
-	// TODO break early
+	// check if partNumber is next to symbol and
+	// build gears
+	gearMap := make(map[coord]*gear)
 	for i := range partNumbers {
 		pn := &partNumbers[i]
 		for r := -1; r < 2; r++ {
 			for c := pn.startingCol - 1; c < pn.startingCol+pn.length+1; c++ {
-				safeToIndex := pn.startingRow+r >= 0 &&
-					pn.startingRow+r < len(schematic) &&
-					c >= 0 &&
-					c < len(schematic[pn.startingRow+r])
+				safeToIndex := pn.startingRow+r >= 0 && // row above is inbounds
+					pn.startingRow+r < len(schematic) && // row below is inbounds
+					c >= 0 && // column to the left is inbounds
+					c < len(schematic[pn.startingRow+r]) // column to the right is inbounds
 
-				if safeToIndex {
-					potentialSymbol := schematic[pn.startingRow+r][c]
-					if symbolReg.MatchString(potentialSymbol) {
-						pn.isTouchingSymbol = true
-
-						// do some gear stuff
-						if potentialSymbol == "*" {
-							existingGear, ok := gearMap[coord{pn.startingRow + r, c}]
-							if ok {
-								existingGear.partNumbers = append(existingGear.partNumbers, *pn)
-							} else {
-								g := gear{
-									partNumbers: []partNumber{
-										*pn,
-									},
-								}
-								gearMap[coord{pn.startingRow + r, c}] = &g
+				if safeToIndex && symbolReg.MatchString(schematic[pn.startingRow+r][c]) {
+					pn.isTouchingSymbol = true
+					if schematic[pn.startingRow+r][c] == "*" {
+						existingGear, ok := gearMap[coord{pn.startingRow + r, c}]
+						if ok {
+							existingGear.partNumbers = append(existingGear.partNumbers, *pn)
+						} else {
+							g := gear{
+								partNumbers: []partNumber{
+									*pn,
+								},
 							}
+							gearMap[coord{pn.startingRow + r, c}] = &g
 						}
 					}
 				}
 			}
 		}
 	}
-	return partNumbers
+	return partNumbers, gearMap
 }
 
 func part1(partNumbers []partNumber) int {
@@ -117,7 +110,7 @@ func part1(partNumbers []partNumber) int {
 	return sum
 }
 
-func part2() int {
+func part2(gearMap map[coord]*gear) int {
 	sum := 0
 	for _, g := range gearMap {
 		if len(g.partNumbers) == 2 {
@@ -143,8 +136,8 @@ func main() {
 		schematic = append(schematic, strings.Split(line, ""))
 	}
 
-	partNumbers := parse(schematic)
+	partNumbers, gearMap := parse(schematic)
 
 	fmt.Println(part1(partNumbers))
-	fmt.Println(part2())
+	fmt.Println(part2(gearMap))
 }
