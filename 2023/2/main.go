@@ -10,8 +10,13 @@ import (
 	"strings"
 )
 
-func isValidPull(pull string, color string, max int) bool {
-	re := regexp.MustCompile(color)
+var (
+	redReg   = regexp.MustCompile(`(\d+) r`)
+	greenReg = regexp.MustCompile(`(\d+) g`)
+	blueReg  = regexp.MustCompile(`(\d+) b`)
+)
+
+func isValidPull(pull string, re *regexp.Regexp, max int) bool {
 	if match := re.FindStringSubmatch(pull); len(match) > 1 {
 		num, err := strconv.Atoi(match[1])
 		if err != nil {
@@ -36,9 +41,9 @@ func part1(games []string) int {
 
 		validGame := true
 		for _, pull := range pulls {
-			validGame = isValidPull(pull, `([\d]+) r`, maxRed) &&
-				isValidPull(pull, `([\d]+) g`, maxGreen) &&
-				isValidPull(pull, `([\d]+) b`, maxBlue)
+			validGame = isValidPull(pull, redReg, maxRed) &&
+				isValidPull(pull, greenReg, maxGreen) &&
+				isValidPull(pull, blueReg, maxBlue)
 			if !validGame {
 				break
 			}
@@ -55,8 +60,7 @@ func part1(games []string) int {
 	return sum
 }
 
-func getColorNumber(pull string, color string, currentMax int) int {
-	re := regexp.MustCompile(color)
+func getColorNumber(pull string, re *regexp.Regexp, currentMax int) int {
 	num := 0
 	var err error
 	if match := re.FindStringSubmatch(pull); len(match) > 1 {
@@ -82,9 +86,9 @@ func part2(games []string) int {
 		maxGreen := 0
 		maxBlue := 0
 		for _, pull := range pulls {
-			maxRed = getColorNumber(pull, `([\d]+) r`, maxRed)
-			maxGreen = getColorNumber(pull, `([\d]+) g`, maxGreen)
-			maxBlue = getColorNumber(pull, `([\d]+) b`, maxBlue)
+			maxRed = getColorNumber(pull, redReg, maxRed)
+			maxGreen = getColorNumber(pull, greenReg, maxGreen)
+			maxBlue = getColorNumber(pull, blueReg, maxBlue)
 		}
 		sum += maxRed * maxGreen * maxBlue
 	}
@@ -93,7 +97,7 @@ func part2(games []string) int {
 }
 
 func main() {
-	f, err := os.Open("/Users/tylerhelmuth/Projects/advent-of-code/2023/2/input.txt")
+	f, err := os.Open("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
