@@ -32,6 +32,27 @@ var (
 	gearMap map[coord]*gear = make(map[coord]*gear)
 )
 
+func newPartNumber(schematicRow []string, col, row, digit int) (partNumber, int) {
+	pn := partNumber{
+		id:          digit,
+		startingRow: row,
+		startingCol: col,
+	}
+	// do some logic as log as we keep seeing digits
+	length := 1
+	for col+length < len(schematicRow) {
+		item := schematicRow[col+length]
+		digit, err := strconv.Atoi(item)
+		if err != nil {
+			break
+		}
+		pn.id = pn.id*10 + digit
+		length++
+	}
+	pn.length = length
+	return pn, col + length
+}
+
 func parse(schematic [][]string) []partNumber {
 	partNumbers := make([]partNumber, 0)
 	for row := 0; row < len(schematic); row++ {
@@ -41,26 +62,9 @@ func parse(schematic [][]string) []partNumber {
 			item := schematicRow[col]
 			digit, err := strconv.Atoi(item)
 			if err == nil { // this means item was a digit
-				pn := partNumber{
-					id:          digit,
-					startingRow: row,
-					startingCol: col,
-				}
-				// do some logic as log as we keep seeing digits
-				length := 0
-				for err == nil && col+length+1 < len(schematicRow) {
-					length += 1
-					item = schematicRow[col+length]
-					digit, err = strconv.Atoi(item)
-					if err == nil {
-						pn.id = pn.id*10 + digit
-					}
-				}
-				pn.length = length
+				var pn partNumber
+				pn, col = newPartNumber(schematicRow, col, row, digit)
 				partNumbers = append(partNumbers, pn)
-
-				col += length
-				continue
 			}
 		}
 	}
