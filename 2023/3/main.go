@@ -36,7 +36,7 @@ func newPartNumber(schematicRow []string, col, row, digit int) (partNumber, int)
 		startingRow: row,
 		startingCol: col,
 	}
-	// do some logic as log as we keep seeing digits
+	// do some logic as long as we keep seeing digits
 	length := 1
 	for col+length < len(schematicRow) {
 		item := schematicRow[col+length]
