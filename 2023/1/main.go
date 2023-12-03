@@ -88,22 +88,17 @@ func part2() int {
 			if foundNumber, ok := numbers[char]; ok {
 				if firstNumber == -1 {
 					firstNumber = foundNumber
-					lastNumber = firstNumber
-				} else {
-					lastNumber = foundNumber
 				}
+				lastNumber = foundNumber
 			} else { // check for words
 				for number, numberVal := range numberWords {
-					if i+len(number) > len(line) {
-						continue
-					}
-					if number == line[i:i+len(number)] {
+					if i+len(number) <= len(line) && number == line[i:i+len(number)] {
 						if firstNumber == -1 {
 							firstNumber = numberVal
-							lastNumber = firstNumber
-						} else {
-							lastNumber = numberVal
 						}
+						lastNumber = numberVal
+						i += len(number) - 2
+						break
 					}
 				}
 			}
