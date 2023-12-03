@@ -10,17 +10,7 @@ import (
 	"strings"
 )
 
-func part1() int {
-	f, err := os.Open("input.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	b, err := io.ReadAll(f)
-	if err != nil {
-		log.Fatal(err)
-	}
-	lines := strings.Split(string(b), "\n")
-
+func part1(lines []string) int {
 	var re = regexp.MustCompile(`[a-zA-Z]`)
 	sum := 0
 	for _, line := range lines {
@@ -66,17 +56,7 @@ var (
 	}
 )
 
-func part2() int {
-	f, err := os.Open("input.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	b, err := io.ReadAll(f)
-	if err != nil {
-		log.Fatal(err)
-	}
-	lines := strings.Split(string(b), "\n")
-
+func part2(lines []string) int {
 	sum := 0
 	for _, line := range lines {
 		chars := strings.Split(line, "")
@@ -109,6 +89,16 @@ func part2() int {
 }
 
 func main() {
-	fmt.Println(part1())
-	fmt.Println(part2())
+	f, err := os.Open("input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	b, err := io.ReadAll(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	lines := strings.Split(string(b), "\n")
+
+	fmt.Println(part1(lines))
+	fmt.Println(part2(lines))
 }
