@@ -17,14 +17,9 @@ type card struct {
 }
 
 func (c *card) worth() float64 {
-	numMatches := 0.0
-	for _, num := range c.numbers {
-		if _, ok := c.winningNumbers[num]; ok {
-			numMatches++
-		}
-	}
+	numMatches := c.numMatches()
 	if numMatches > 0 {
-		return math.Pow(2, numMatches-1)
+		return math.Pow(2, float64(numMatches-1))
 	}
 	return 0
 }
