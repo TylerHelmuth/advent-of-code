@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type rule struct {
@@ -89,9 +90,10 @@ type tuple struct {
 	end   float64
 }
 
-// currently this solution allows brute forcing several input pairs at a time
-// but it still takes too long to run with the full input all at once
+// Runs in 150 seconds
 func part2(lines []string) float64 {
+	start := time.Now()
+
 	seedStrs := strings.Split(strings.Trim(strings.Split(lines[0], ":")[1], " "), " ")
 	seedRanges := make([]float64, len(seedStrs))
 	for i, s := range seedStrs {
@@ -141,6 +143,9 @@ func part2(lines []string) float64 {
 		}
 	}
 
+	end := time.Now()
+	fmt.Println(fmt.Sprintf("generating seeds took %v seconds", end.Sub(start).Seconds()))
+
 	currentMap := almanacMap{
 		rules: make([]rule, 0),
 	}
@@ -151,7 +156,15 @@ func part2(lines []string) float64 {
 
 		// When we get in here it is time to send the numbers through a map
 		if !numberReg.MatchString(line) {
-			seeds = currentMap.generateNewSeeds(seeds)
+			for i, seed := range seeds {
+				for _, r := range currentMap.rules {
+					if seed >= r.sourceRangeStart && seed < r.sourceRangeStart+r.length {
+						seeds[i] = seed - r.sourceRangeStart + r.destRangeStart
+						break
+					}
+					seeds[i] = seed
+				}
+			}
 			currentMap = almanacMap{}
 			continue
 		}
@@ -167,7 +180,16 @@ func part2(lines []string) float64 {
 			length:           length,
 		})
 	}
-	seeds = currentMap.generateNewSeeds(seeds)
+
+	for i, seed := range seeds {
+		for _, r := range currentMap.rules {
+			if seed >= r.sourceRangeStart && seed < r.sourceRangeStart+r.length {
+				seeds[i] = seed - r.sourceRangeStart + r.destRangeStart
+				break
+			}
+			seeds[i] = seed
+		}
+	}
 
 	smallestLocation := seeds[0]
 	for _, s := range seeds[1:] {
@@ -189,6 +211,13 @@ func main() {
 	}
 	lines := strings.Split(string(b), "\n")
 
+	start := time.Now()
 	fmt.Println(fmt.Sprintf("%f", part1(lines)))
+	end := time.Now()
+	fmt.Println(fmt.Sprintf("part 1 took %v seconds", end.Sub(start).Seconds()))
+
+	start = time.Now()
 	fmt.Println(fmt.Sprintf("%f", part2(lines)))
+	end = time.Now()
+	fmt.Println(fmt.Sprintf("part 2 took %v seconds", end.Sub(start).Seconds()))
 }
