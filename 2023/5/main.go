@@ -13,15 +13,15 @@ import (
 )
 
 type rule struct {
-	destRangeStart, sourceRangeStart, length float64
+	destRangeStart, sourceRangeStart, length int64
 }
 
 type almanacMap struct {
 	rules []rule
 }
 
-func (a *almanacMap) generateNewSeeds(seeds []float64) []float64 {
-	newSeeds := make([]float64, len(seeds))
+func (a *almanacMap) generateNewSeeds(seeds []int64) []int64 {
+	newSeeds := make([]int64, len(seeds))
 
 	for i, seed := range seeds {
 		for _, r := range a.rules {
@@ -40,11 +40,11 @@ var (
 	numberReg = regexp.MustCompile(`\d`)
 )
 
-func part1(lines []string) float64 {
+func part1(lines []string) int64 {
 	seedStrs := strings.Split(strings.Trim(strings.Split(lines[0], ":")[1], " "), " ")
-	seeds := make([]float64, len(seedStrs))
+	seeds := make([]int64, len(seedStrs))
 	for i, s := range seedStrs {
-		seedNum, _ := strconv.ParseFloat(s, 64)
+		seedNum, _ := strconv.ParseInt(s, 10, 64)
 		seeds[i] = seedNum
 	}
 
@@ -64,9 +64,9 @@ func part1(lines []string) float64 {
 		}
 		numbers := strings.Split(line, " ")
 
-		dest, _ := strconv.ParseFloat(numbers[0], 64)
-		source, _ := strconv.ParseFloat(numbers[1], 64)
-		length, _ := strconv.ParseFloat(numbers[2], 64)
+		dest, _ := strconv.ParseInt(numbers[0], 10, 64)
+		source, _ := strconv.ParseInt(numbers[1], 10, 64)
+		length, _ := strconv.ParseInt(numbers[2], 10, 64)
 
 		currentMap.rules = append(currentMap.rules, rule{
 			destRangeStart:   dest,
@@ -86,18 +86,18 @@ func part1(lines []string) float64 {
 }
 
 type tuple struct {
-	start float64
-	end   float64
+	start int64
+	end   int64
 }
 
 // Runs in 150 seconds
-func part2(lines []string) float64 {
+func part2(lines []string) int64 {
 	start := time.Now()
 
 	seedStrs := strings.Split(strings.Trim(strings.Split(lines[0], ":")[1], " "), " ")
-	seedRanges := make([]float64, len(seedStrs))
+	seedRanges := make([]int64, len(seedStrs))
 	for i, s := range seedStrs {
-		seedNum, _ := strconv.ParseFloat(s, 64)
+		seedNum, _ := strconv.ParseInt(s, 10, 64)
 		seedRanges[i] = seedNum
 	}
 
@@ -129,16 +129,16 @@ func part2(lines []string) float64 {
 		}
 	}
 
-	capcity := 0.0
+	capcity := int64(0)
 	for _, t := range tuples {
 		capcity += t.end - t.start + 1
 	}
 
-	seeds := make([]float64, int64(capcity))
+	seeds := make([]int64, int64(capcity))
 	index := 0
 	for _, t := range tuples {
-		for i := 0; float64(i) <= t.end-t.start; i++ {
-			seeds[index] = t.start + float64(i)
+		for i := 0; int64(i) <= t.end-t.start; i++ {
+			seeds[index] = t.start + int64(i)
 			index++
 		}
 	}
@@ -170,9 +170,9 @@ func part2(lines []string) float64 {
 		}
 		numbers := strings.Split(line, " ")
 
-		dest, _ := strconv.ParseFloat(numbers[0], 64)
-		source, _ := strconv.ParseFloat(numbers[1], 64)
-		length, _ := strconv.ParseFloat(numbers[2], 64)
+		dest, _ := strconv.ParseInt(numbers[0], 10, 64)
+		source, _ := strconv.ParseInt(numbers[1], 10, 64)
+		length, _ := strconv.ParseInt(numbers[2], 10, 64)
 
 		currentMap.rules = append(currentMap.rules, rule{
 			destRangeStart:   dest,
@@ -212,12 +212,12 @@ func main() {
 	lines := strings.Split(string(b), "\n")
 
 	start := time.Now()
-	fmt.Println(fmt.Sprintf("%f", part1(lines)))
+	fmt.Println(part1(lines))
 	end := time.Now()
 	fmt.Println(fmt.Sprintf("part 1 took %v seconds", end.Sub(start).Seconds()))
 
 	start = time.Now()
-	fmt.Println(fmt.Sprintf("%f", part2(lines)))
+	fmt.Println(part2(lines))
 	end = time.Now()
 	fmt.Println(fmt.Sprintf("part 2 took %v seconds", end.Sub(start).Seconds()))
 }
