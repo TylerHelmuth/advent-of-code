@@ -9,40 +9,36 @@ import (
 	"strings"
 )
 
-type history struct {
-	initial []int
+type history map[int][]int
 
-	predicitonMap map[int][]int
-}
-
-func (h *history) calcNextValue() int {
-	for i := len(h.predicitonMap) - 2; i >= 0; i-- {
-		currentRow := h.predicitonMap[i]
-		previousRow := h.predicitonMap[i+1]
+func calcNextValue(h history) int {
+	for i := len(h) - 2; i >= 0; i-- {
+		currentRow := h[i]
+		previousRow := h[i+1]
 
 		newVal := currentRow[len(currentRow)-1] + previousRow[len(previousRow)-1]
 		currentRow = append(currentRow, newVal)
-		h.predicitonMap[i] = currentRow
+		h[i] = currentRow
 	}
-	return h.predicitonMap[0][len(h.predicitonMap[0])-1]
+	return h[0][len(h[0])-1]
 }
 
-func (h *history) calcPreviousValue() int {
-	for i := len(h.predicitonMap) - 2; i >= 0; i-- {
-		currentRow := h.predicitonMap[i]
-		previousRow := h.predicitonMap[i+1]
+func calcPreviousValue(h history) int {
+	for i := len(h) - 2; i >= 0; i-- {
+		currentRow := h[i]
+		previousRow := h[i+1]
 
 		newVal := currentRow[0] - previousRow[0]
 		currentRow = append([]int{newVal}, currentRow...)
-		h.predicitonMap[i] = currentRow
+		h[i] = currentRow
 	}
-	return h.predicitonMap[0][0]
+	return h[0][0]
 }
 
 func part1(histories []history) int {
 	sum := 0
 	for _, h := range histories {
-		sum += h.calcNextValue()
+		sum += calcNextValue(h)
 	}
 	return sum
 }
@@ -50,18 +46,18 @@ func part1(histories []history) int {
 func part2(histories []history) int {
 	sum := 0
 	for _, h := range histories {
-		sum += h.calcPreviousValue()
+		sum += calcPreviousValue(h)
 	}
 	return sum
 }
 
-func buildPredictionMap(initial []int) map[int][]int {
-	predictionMap := make(map[int][]int)
-	predictionMap[0] = initial
+func buildPredictionMap(initial []int) history {
+	h := make(history)
+	h[0] = initial
 	currentRowIndex := 0
 DONE:
 	for {
-		currentRow := predictionMap[currentRowIndex]
+		currentRow := h[currentRowIndex]
 		nextRow := make([]int, len(currentRow)-1)
 		atZero := true
 		for i := 0; i < len(currentRow)-1; i++ {
@@ -73,12 +69,12 @@ DONE:
 		}
 
 		currentRowIndex++
-		predictionMap[currentRowIndex] = nextRow
+		h[currentRowIndex] = nextRow
 		if atZero {
 			break DONE
 		}
 	}
-	return predictionMap
+	return h
 }
 
 func parse(lines []string) []history {
@@ -90,11 +86,7 @@ func parse(lines []string) []history {
 			num, _ := strconv.Atoi(n)
 			nums = append(nums, num)
 		}
-
-		histories[i] = history{
-			initial:       nums,
-			predicitonMap: buildPredictionMap(nums),
-		}
+		histories[i] = buildPredictionMap(nums)
 	}
 	return histories
 }
