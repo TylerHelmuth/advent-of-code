@@ -34,6 +34,12 @@ const (
 
 type grid [][]pipe
 
+type coord struct {
+	r, c int
+}
+
+type loopMap map[coord]pipe
+
 type pipe struct {
 	allowedConnections map[direction]bool
 	r, c               int
@@ -102,7 +108,7 @@ func getNeighbor(g grid, r, c int) pipe {
 	return newPipe('.', r, c)
 }
 
-func part1(g grid, sRow, sCol int) float64 {
+func part1(g grid, sRow, sCol int) (float64, []pipe) {
 	currentPipe := g[sRow][sCol]
 	loop := []pipe{currentPipe}
 	var cameFrom direction
@@ -130,7 +136,7 @@ func part1(g grid, sRow, sCol int) float64 {
 			}
 			if connects {
 				if currentPipe.isS && len(loop) > 1 {
-					return math.Floor(float64(len(loop)) / 2.0)
+					return math.Floor(float64(len(loop)) / 2.0), loop
 				}
 				loop = append(loop, currentPipe)
 				currentPipe = neighbor
@@ -141,10 +147,63 @@ func part1(g grid, sRow, sCol int) float64 {
 	}
 }
 
-//func part2(lines []string) int {
-//	sum := 0
-//	return sum
-//}
+func part2(g grid, loop []pipe) int {
+	m := make(loopMap, len(loop))
+	for _, p := range loop {
+		// Actually set S to its pipe type
+		if p.isS {
+			p.allowedConnections[NORTH] = p.hasConnection(NORTH, getNeighbor(g, p.r-1, p.c))
+			p.allowedConnections[EAST] = p.hasConnection(EAST, getNeighbor(g, p.r, p.c+1))
+			p.allowedConnections[SOUTH] = p.hasConnection(SOUTH, getNeighbor(g, p.r+1, p.c))
+			p.allowedConnections[WEST] = p.hasConnection(WEST, getNeighbor(g, p.r, p.c-1))
+		}
+		m[coord{r: p.r, c: p.c}] = p
+	}
+
+	count := 0
+	for r := 0; r < len(g); r++ {
+		numPipesCrossed := 0
+		for c := 0; c < len(g[r]); c++ {
+			currentPipe := g[r][c]
+			if _, ok := m[coord{r: currentPipe.r, c: currentPipe.c}]; !ok {
+				if numPipesCrossed%2 == 1 {
+					count++
+				} else {
+					continue
+				}
+			} else {
+				numNorth := 0
+				numSouth := 0
+
+				if currentPipe.allowedConnections[NORTH] {
+					numNorth++
+				}
+				if currentPipe.allowedConnections[SOUTH] {
+					numSouth++
+				}
+
+				for !(numNorth == 2 || numSouth == 2 || (numNorth == 1 && numSouth == 1)) {
+					c++
+					currentPipe = getNeighbor(g, currentPipe.r, currentPipe.c+1)
+					if currentPipe.allowedConnections[NORTH] {
+						numNorth++
+					}
+					if currentPipe.allowedConnections[SOUTH] {
+						numSouth++
+					}
+				}
+
+				if numNorth == 2 || numSouth == 2 {
+					numPipesCrossed += 2
+				} else {
+					numPipesCrossed++
+				}
+
+			}
+		}
+	}
+	return count
+}
 
 func parse(lines []string) (grid, int, int) {
 	g := make([][]pipe, len(lines))
@@ -176,7 +235,9 @@ func main() {
 
 	g, sRow, sCol := parse(lines)
 
-	fmt.Println(part1(g, sRow, sCol))
+	part1Answer, loop := part1(g, sRow, sCol)
 
-	//fmt.Println(part2(lines))
+	fmt.Println(part1Answer)
+
+	fmt.Println(part2(g, loop))
 }
