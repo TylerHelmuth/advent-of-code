@@ -102,10 +102,12 @@ func getNeighbor(g grid, r, c int) pipe {
 	return newPipe('.', r, c)
 }
 
-func part1Helper(g grid, loop []pipe, cameFrom direction, currentPipe pipe) float64 {
-	cont := true
-	for cont {
-	keepGoing:
+func part1(g grid, sRow, sCol int) float64 {
+	currentPipe := g[sRow][sCol]
+	loop := []pipe{currentPipe}
+	var cameFrom direction
+
+	for {
 		for d, allowed := range currentPipe.allowedConnections {
 			if !allowed || d == cameFrom {
 				continue
@@ -127,50 +129,16 @@ func part1Helper(g grid, loop []pipe, cameFrom direction, currentPipe pipe) floa
 				connects = currentPipe.hasConnection(WEST, neighbor)
 			}
 			if connects {
-				if currentPipe.isS {
-					cont = false
-					break
+				if currentPipe.isS && len(loop) > 1 {
+					return math.Floor(float64(len(loop)) / 2.0)
 				}
 				loop = append(loop, currentPipe)
 				currentPipe = neighbor
 				cameFrom = d.opposite()
-				goto keepGoing
+				break
 			}
 		}
-		cont = false
 	}
-
-	return math.Floor(float64(len(loop)) / 2.0)
-}
-
-func part1(g grid, sRow, sCol int) float64 {
-	sPipe := g[sRow][sCol]
-
-	for startingDir := range sPipe.allowedConnections {
-		connects := false
-		var neighbor pipe
-		switch startingDir {
-		case NORTH:
-			neighbor = getNeighbor(g, sPipe.r-1, sPipe.c)
-			connects = sPipe.hasConnection(NORTH, neighbor)
-		case EAST:
-			neighbor = getNeighbor(g, sPipe.r, sPipe.c+1)
-			connects = sPipe.hasConnection(EAST, neighbor)
-		case SOUTH:
-			neighbor = getNeighbor(g, sPipe.r+1, sPipe.c)
-			connects = sPipe.hasConnection(SOUTH, neighbor)
-		case WEST:
-			neighbor = getNeighbor(g, sPipe.r, sPipe.c-1)
-			connects = sPipe.hasConnection(WEST, neighbor)
-		}
-
-		// We can start actually looking for a loop
-		if connects {
-			loop := []pipe{sPipe}
-			return part1Helper(g, loop, startingDir.opposite(), neighbor)
-		}
-	}
-	return -1.0
 }
 
 //func part2(lines []string) int {
