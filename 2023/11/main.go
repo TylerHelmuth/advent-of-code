@@ -40,18 +40,25 @@ func expandRows(g grid, galaxies []galaxy, scalar int64) []galaxy {
 	return galaxies
 }
 
-func transpose(g grid, galaxies []galaxy) (grid, []galaxy) {
-	newGrid := make(grid, len(g[0]))
-	for r := 0; r < len(g); r++ {
-		for c := 0; c < len(g[r]); c++ {
-			newGrid[c] = append(newGrid[c], g[r][c])
+func expandCols(g grid, galaxies []galaxy, scalar int64) []galaxy {
+	for c := 0; c < len(g[0]); c++ {
+		hasGalaxy := false
+		for r := 0; r < len(g); r++ {
+			if g[r][c] == "#" {
+				hasGalaxy = true
+				break
+			}
+		}
+		if !hasGalaxy {
+			for i := range galaxies {
+				ga := &galaxies[i]
+				if ga.c > int64(c) {
+					ga.expandedC = ga.expandedC + scalar
+				}
+			}
 		}
 	}
-	newGalaxies := make([]galaxy, len(galaxies))
-	for i, ga := range galaxies {
-		newGalaxies[i] = galaxy{r: ga.c, c: ga.r, expandedR: ga.expandedC, expandedC: ga.expandedR}
-	}
-	return newGrid, newGalaxies
+	return galaxies
 }
 
 func findGalaxies(g grid) []galaxy {
@@ -89,27 +96,14 @@ func main() {
 
 	g := parse(lines)
 	galaxies := findGalaxies(g)
-	galaxies = expandRows(g, galaxies, 1000000-1)
-	fmt.Println("")
-	for r := 0; r < len(g); r++ {
-		fmt.Println(g[r])
-	}
-	fmt.Println("")
-	fmt.Println(galaxies)
-	g, galaxies = transpose(g, galaxies)
-	fmt.Println("")
-	for r := 0; r < len(g); r++ {
-		fmt.Println(g[r])
-	}
-	fmt.Println("")
-	fmt.Println(galaxies)
-	galaxies = expandRows(g, galaxies, 1000000-1)
-	fmt.Println("")
-	for r := 0; r < len(g); r++ {
-		fmt.Println(g[r])
-	}
-	fmt.Println("")
-	fmt.Println(galaxies)
+	scalar := int64(1)
+	galaxies = expandRows(g, galaxies, scalar)
+	galaxies = expandCols(g, galaxies, scalar)
+	fmt.Println(fmt.Sprintf("%f", solve(galaxies)))
 
+	galaxies = findGalaxies(g)
+	scalar = 1_000_000 - 1
+	galaxies = expandRows(g, galaxies, scalar)
+	galaxies = expandCols(g, galaxies, scalar)
 	fmt.Println(fmt.Sprintf("%f", solve(galaxies)))
 }
