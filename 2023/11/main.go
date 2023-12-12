@@ -13,8 +13,8 @@ import (
 type grid [][]string
 
 type galaxy struct {
-	r, c                 int
-	expandedR, expandedC int
+	r, c                 int64
+	expandedR, expandedC int64
 }
 
 func parse(lines []string) grid {
@@ -25,13 +25,13 @@ func parse(lines []string) grid {
 	return g
 }
 
-func expandRows(g grid, galaxies []galaxy, scalar int) []galaxy {
+func expandRows(g grid, galaxies []galaxy, scalar int64) []galaxy {
 	for r := 0; r < len(g); r++ {
 		row := g[r]
 		if !slices.Contains(row, "#") {
 			for i := range galaxies {
 				ga := &galaxies[i]
-				if ga.r > r {
+				if ga.r > int64(r) {
 					ga.expandedR = ga.expandedR + scalar
 				}
 			}
@@ -59,14 +59,14 @@ func findGalaxies(g grid) []galaxy {
 	for r := 0; r < len(g); r++ {
 		for c := 0; c < len(g[r]); c++ {
 			if g[r][c] == "#" {
-				galaxies = append(galaxies, galaxy{r: r, c: c, expandedR: r, expandedC: c})
+				galaxies = append(galaxies, galaxy{r: int64(r), c: int64(c), expandedR: int64(r), expandedC: int64(c)})
 			}
 		}
 	}
 	return galaxies
 }
 
-func part1(galaxies []galaxy) float64 {
+func solve(galaxies []galaxy) float64 {
 	sumOfShortestLengths := 0.0
 	for i, currentGalaxy := range galaxies {
 		for _, compGalaxy := range galaxies[i+1:] {
@@ -89,7 +89,7 @@ func main() {
 
 	g := parse(lines)
 	galaxies := findGalaxies(g)
-	galaxies = expandRows(g, galaxies, 1)
+	galaxies = expandRows(g, galaxies, 1000000-1)
 	fmt.Println("")
 	for r := 0; r < len(g); r++ {
 		fmt.Println(g[r])
@@ -103,7 +103,7 @@ func main() {
 	}
 	fmt.Println("")
 	fmt.Println(galaxies)
-	galaxies = expandRows(g, galaxies, 1)
+	galaxies = expandRows(g, galaxies, 1000000-1)
 	fmt.Println("")
 	for r := 0; r < len(g); r++ {
 		fmt.Println(g[r])
@@ -111,5 +111,5 @@ func main() {
 	fmt.Println("")
 	fmt.Println(galaxies)
 
-	fmt.Println(fmt.Sprintf("%f", part1(galaxies)))
+	fmt.Println(fmt.Sprintf("%f", solve(galaxies)))
 }
