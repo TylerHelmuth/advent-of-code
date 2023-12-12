@@ -24,30 +24,33 @@ func parse(lines []string) grid {
 	return g
 }
 
-func expandRows(g grid) grid {
-	expandedLine := ""
-	for range g[0] {
-		expandedLine += "."
-	}
-
+func expandRows(g grid, galaxies []galaxy, scalar int) []galaxy {
 	for r := 0; r < len(g); r++ {
 		row := g[r]
 		if !slices.Contains(row, "#") {
-			g = append(g[:r+1], g[r:]...)
-			r++
+			for i := range galaxies {
+				ga := &galaxies[i]
+				if ga.r > r {
+					ga.r = ga.r + scalar
+				}
+			}
 		}
 	}
-	return g
+	return galaxies
 }
 
-func transpose(g grid) grid {
+func transpose(g grid, galaxies []galaxy) (grid, []galaxy) {
 	newGrid := make(grid, len(g[0]))
 	for r := 0; r < len(g); r++ {
 		for c := 0; c < len(g[r]); c++ {
 			newGrid[c] = append(newGrid[c], g[r][c])
 		}
 	}
-	return newGrid
+	newGalaxies := make([]galaxy, len(galaxies))
+	for i, ga := range galaxies {
+		newGalaxies[i] = galaxy{r: ga.c, c: ga.r}
+	}
+	return newGrid, newGalaxies
 }
 
 func findGalaxies(g grid) []galaxy {
@@ -84,31 +87,28 @@ func main() {
 	lines := strings.Split(string(b), "\n")
 
 	g := parse(lines)
-	g = expandRows(g)
-	g = transpose(g)
-	g = expandRows(g)
-
+	galaxies := findGalaxies(g)
+	galaxies = expandRows(g, galaxies, 1)
 	fmt.Println("")
 	for r := 0; r < len(g); r++ {
 		fmt.Println(g[r])
 	}
 	fmt.Println("")
-
-	galaxies := findGalaxies(g)
+	fmt.Println(galaxies)
+	g, galaxies = transpose(g, galaxies)
+	fmt.Println("")
+	for r := 0; r < len(g); r++ {
+		fmt.Println(g[r])
+	}
+	fmt.Println("")
+	fmt.Println(galaxies)
+	galaxies = expandRows(g, galaxies, 1)
+	fmt.Println("")
+	for r := 0; r < len(g); r++ {
+		fmt.Println(g[r])
+	}
+	fmt.Println("")
+	fmt.Println(galaxies)
 
 	fmt.Println(fmt.Sprintf("%f", part1(galaxies)))
-
-	//fmt.Println("")
-	//for r := 0; r < len(g); r++ {
-	//	fmt.Println(g[r])
-	//}
-
-	//parse(lines)
-	//g, sRow, sCol := parse(lines)
-
-	//part1Answer, loop := part1(g, sRow, sCol)
-
-	//fmt.Println(part1Answer)
-	//
-	//fmt.Println(part2(g, loop))
 }
