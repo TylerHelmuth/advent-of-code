@@ -13,7 +13,8 @@ import (
 type grid [][]string
 
 type galaxy struct {
-	r, c int
+	r, c                 int
+	expandedR, expandedC int
 }
 
 func parse(lines []string) grid {
@@ -31,7 +32,7 @@ func expandRows(g grid, galaxies []galaxy, scalar int) []galaxy {
 			for i := range galaxies {
 				ga := &galaxies[i]
 				if ga.r > r {
-					ga.r = ga.r + scalar
+					ga.expandedR = ga.expandedR + scalar
 				}
 			}
 		}
@@ -48,7 +49,7 @@ func transpose(g grid, galaxies []galaxy) (grid, []galaxy) {
 	}
 	newGalaxies := make([]galaxy, len(galaxies))
 	for i, ga := range galaxies {
-		newGalaxies[i] = galaxy{r: ga.c, c: ga.r}
+		newGalaxies[i] = galaxy{r: ga.c, c: ga.r, expandedR: ga.expandedC, expandedC: ga.expandedR}
 	}
 	return newGrid, newGalaxies
 }
@@ -58,7 +59,7 @@ func findGalaxies(g grid) []galaxy {
 	for r := 0; r < len(g); r++ {
 		for c := 0; c < len(g[r]); c++ {
 			if g[r][c] == "#" {
-				galaxies = append(galaxies, galaxy{r, c})
+				galaxies = append(galaxies, galaxy{r: r, c: c, expandedR: r, expandedC: c})
 			}
 		}
 	}
@@ -69,7 +70,7 @@ func part1(galaxies []galaxy) float64 {
 	sumOfShortestLengths := 0.0
 	for i, currentGalaxy := range galaxies {
 		for _, compGalaxy := range galaxies[i+1:] {
-			sumOfShortestLengths += math.Abs(float64(currentGalaxy.r-compGalaxy.r)) + math.Abs(float64(currentGalaxy.c-compGalaxy.c))
+			sumOfShortestLengths += math.Abs(float64(currentGalaxy.expandedR-compGalaxy.expandedR)) + math.Abs(float64(currentGalaxy.expandedC-compGalaxy.expandedC))
 		}
 	}
 	return sumOfShortestLengths
