@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type operation int
@@ -143,6 +144,8 @@ func main() {
 	}
 	lines := strings.Split(string(b), "\n")
 
-	fmt.Println(fmt.Sprintf("part 1 sum is %d", part1(lines)))
-	fmt.Println(fmt.Sprintf("part 2 sum is %d", part2(lines)))
+	startTime := time.Now()
+	fmt.Println(fmt.Sprintf("part 1 sum is %d, completed in %dms", part1(lines), time.Now().Sub(startTime).Milliseconds()))
+	startTime = time.Now()
+	fmt.Println(fmt.Sprintf("part 2 sum is %d, completed in %dms", part2(lines), time.Now().Sub(startTime).Milliseconds()))
 }
