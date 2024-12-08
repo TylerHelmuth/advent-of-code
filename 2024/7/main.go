@@ -46,32 +46,7 @@ func performOperation(target, number int, o operation, runningTotals []runningTo
 	return newRunningTotals
 }
 
-func calculateEquation(target int, numbers []int, operations []operation) int {
-	runningTotals := make([]runningTotal, 0)
-	if numbers[0]+numbers[1] <= target {
-		runningTotals = append(runningTotals, runningTotal{
-			numbers:    numbers[0:2],
-			operations: []operation{add},
-			value:      numbers[0] + numbers[1],
-		})
-	}
-	if numbers[0]*numbers[1] <= target {
-		runningTotals = append(runningTotals, runningTotal{
-			numbers:    numbers[0:2],
-			operations: []operation{mult},
-			value:      numbers[0] * numbers[1],
-		})
-	}
-	// concat case
-	r, _ := strconv.Atoi(strconv.Itoa(numbers[0]) + strconv.Itoa(numbers[1]))
-	if r <= target {
-		runningTotals = append(runningTotals, runningTotal{
-			numbers:    numbers[0:2],
-			operations: []operation{concat},
-			value:      r,
-		})
-	}
-
+func calculateEquation(target int, numbers []int, operations []operation, runningTotals []runningTotal) int {
 	for i := 2; i < len(numbers); i++ {
 		newRunningTotals := make([]runningTotal, 0)
 		for _, o := range operations {
@@ -103,7 +78,22 @@ func part1(lines []string) int {
 	sum := 0
 	for _, l := range lines {
 		target, numbers := parseLine(l)
-		sum += calculateEquation(target, numbers, []operation{add, mult})
+		runningTotals := make([]runningTotal, 0)
+		if numbers[0]+numbers[1] <= target {
+			runningTotals = append(runningTotals, runningTotal{
+				numbers:    numbers[0:2],
+				operations: []operation{add},
+				value:      numbers[0] + numbers[1],
+			})
+		}
+		if numbers[0]*numbers[1] <= target {
+			runningTotals = append(runningTotals, runningTotal{
+				numbers:    numbers[0:2],
+				operations: []operation{mult},
+				value:      numbers[0] * numbers[1],
+			})
+		}
+		sum += calculateEquation(target, numbers, []operation{add, mult}, runningTotals)
 	}
 	return sum
 }
@@ -112,7 +102,32 @@ func part2(lines []string) int {
 	sum := 0
 	for _, l := range lines {
 		target, numbers := parseLine(l)
-		sum += calculateEquation(target, numbers, []operation{add, mult, concat})
+		runningTotals := make([]runningTotal, 0)
+		if numbers[0]+numbers[1] <= target {
+			runningTotals = append(runningTotals, runningTotal{
+				numbers:    numbers[0:2],
+				operations: []operation{add},
+				value:      numbers[0] + numbers[1],
+			})
+		}
+		if numbers[0]*numbers[1] <= target {
+			runningTotals = append(runningTotals, runningTotal{
+				numbers:    numbers[0:2],
+				operations: []operation{mult},
+				value:      numbers[0] * numbers[1],
+			})
+		}
+		// concat case
+		r, _ := strconv.Atoi(strconv.Itoa(numbers[0]) + strconv.Itoa(numbers[1]))
+		if r <= target {
+			runningTotals = append(runningTotals, runningTotal{
+				numbers:    numbers[0:2],
+				operations: []operation{concat},
+				value:      r,
+			})
+		}
+
+		sum += calculateEquation(target, numbers, []operation{add, mult, concat}, runningTotals)
 	}
 	return sum
 }
